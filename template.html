@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Form Validator</title>
+    <link rel="stylesheet" href="css/style.css">
+  </head>
+  <body>
+    <div class="app">
+      <div class="settings">
+        <ul class="activeInputs">
+          <li class="inputBlock open">
+            <h3>Text</h3>
+            <div class="inputBlockControl">
+              x
+            </div>
+            <div class="inputSettings">
+              <div class="item">
+                <label for="textName">Input name</label>
+                <div class="itemContent">
+                  <input id="textName" type="text" name="text-name" value="Text">
+                </div>
+              </div>
+              <div class="item">
+                <label for="textMin">Minimum characters</label>
+                <div class="itemContent">
+                  <input id="textMin" type="number" name="text-min" value="0">
+                  <label for="textMinError">Default error message:</label>
+                  <textarea id="textMinError" type="text" name="text-min-error">%name% is too short.</textarea>
+                </div>
+              </div>
+              <div class="item">
+                <label for="textMax">Maximum characters</label>
+                <div class="itemContent">
+                  <input id="textMax" type="number" name="text-max" value="20">
+                  <label for="textMaxError">Default error message:</label>
+                  <textarea id="textMaxError" type="text" name="text-max-error">%name% is too long.</textarea>
+                </div>
+              </div>
+              <div class="item">
+                <label for="textBl">Blacklist</label>
+                <input class="itemSwitch on" type="checkbox" checked/>
+                <div class="itemContent">
+                  <span class="itemComment">Separated by comma. Characters are case senstive.</span>
+                  <input id="textBl" type="text" name="text-bl" value="a,1">
+                  <label for="textBlError">Default error message:</label>
+                  <textarea id="textBlError" type="text" name="text-bl-error">%name% contains invalid characters.</textarea>
+                </div>
+              </div>
+              <div class="item">
+                <label for="textWl">Whitelist</label>
+                <input class="itemSwitch off" type="checkbox"/>
+                <div class="itemContent hidden">
+                  <span class="itemComment">Separated by comma. Characters are case senstive.</span>
+                  <input id="textWl" type="text" name="text-wl" value="">
+                  <label for="textWlError">Default error message:</label>
+                  <textarea id="textWlError" type="text" name="text-wl-error">Text contains invalid characters.</textarea>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li class="inputBlock open">
+            <h3>Number</h3>
+            <div class="inputBlockControl">
+              x
+            </div>
+            <div class="inputSettings">
+              <div class="item">
+                <label for="numberName">Input name</label>
+                <div class="itemContent">
+                  <input id="numberName" type="text" name="number-name" value="Age">
+                </div>
+              </div>
+              <div class="item">
+                <label for="numberMin">Minimum value</label>
+                <div class="itemContent">
+                  <input id="numberMin" type="number" name="number-min" value="0">
+                  <label for="numberMinError">Default error message:</label>
+                  <textarea id="numberMinError" type="text" name="number-min-error">%name% must be bigger than %min%.</textarea>
+                </div>
+              </div>
+              <div class="item">
+                <label for="numberMax">Maximum value</label>
+                <div class="itemContent">
+                  <input id="numberMax" type="number" name="number-max" value="99">
+                  <label for="numberMaxError">Default error message:</label>
+                  <textarea id="numberMaxError" type="text" name="number-max-error">%name% must be between %min% and %max%.</textarea>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li class="inputBlock open">
+            <h3>Phone</h3>
+            <div class="inputBlockControl">
+              x
+            </div>
+            <div class="inputSettings">
+              <div class="item">
+                <label for="telName">Input name</label>
+                <div class="itemContent">
+                  <input id="telName" type="text" name="tel-name" value="Phone">
+                </div>
+              </div>
+              <div class="item">
+                <label for="telMin">Minimum digits</label>
+                <div class="itemContent">
+                  <input id="telMin" type="number" name="tel-min" value="10">
+                  <label for="telMinError">Default error message:</label>
+                  <textarea id="telMinError" type="text" name="tel-min-error">%name% must have %min% to %max% digits.</textarea>
+                </div>
+              </div>
+              <div class="item">
+                <label for="telMax">Maximum value</label>
+                <div class="itemContent">
+                  <input id="telMax" type="number" name="tel-max" value="12">
+                  <label for="telMaxError">Default error message:</label>
+                  <textarea id="telMaxError" type="text" name="tel-max-error">%name% must have %min% to %max% digits.</textarea>
+                </div>
+              </div>
+              <div class="item">
+                <label for="telWl">Whitelist</label>
+                <input class="itemSwitch on" type="checkbox" checked/>
+                <div class="itemContent">
+                  <span class="itemComment">Additional whitelisted characters separated by comma. Characters are case senstive.</span>
+                  <input id="telWl" type="text" name="tel-wl" value="+,-,(,)">
+                  <label for="telWlError">Default error message:</label>
+                  <textarea id="telWlError" type="text" name="tel-wl-error">%name% contains invalid characters.</textarea>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li class="inputBlock open">
+            <h3>E-mail</h3>
+            <div class="inputBlockControl">
+              x
+            </div>
+            <div class="inputSettings">
+              <div class="item">
+                <label for="emailName">Input name</label>
+                <div class="itemContent">
+                  <input id="emailName" type="text" name="email-name" value="E-mail">
+                </div>
+              </div>
+              <div class="item">
+                <span>Errors</span>
+                <div class="itemContent">
+                  <label for="emailFormatError">Default error message:</label>
+                  <textarea id="emailFormatError" type="text" name="email-format-error">%name% is not in a valid format.</textarea>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li class="inputBlock open">
+            <h3>Password</h3>
+            <div class="inputBlockControl">
+              <a href="#" class="deleteBtn">x</a>
+            </div>
+            <div class="inputSettings">
+              <div class="item">
+                <label for="passwordName">Input name</label>
+                <div class="itemContent">
+                  <input id="passwordName" type="text" name="password-name" value="Password">
+                </div>
+              </div>
+              <div class="item">
+                <label for="passwordMin">Minimum characters</label>
+                <div class="itemContent">
+                  <input id="passwordMin" type="number" name="password-min" value="0">
+                  <label for="passwordMinError">Default error message:</label>
+                  <textarea id="passwordMinError" type="text" name="password-min-error">%name% is too short.</textarea>
+                </div>
+              </div>
+              <div class="item">
+                <label for="passwordMax">Maximum characters</label>
+                <div class="itemContent">
+                  <input id="passwordMax" type="number" name="password-max" value="20">
+                  <label for="passwordMaxError">Default error message:</label>
+                  <textarea id="passwordMaxError" type="text" name="password-max-error">%name% is too long.</textarea>
+                </div>
+              </div>
+              <div class="item">
+                <label for="passwordBl">Blacklist</label>
+                <input class="itemSwitch on" type="checkbox" checked/>
+                <div class="itemContent">
+                  <span class="itemComment">Separated by comma. Characters are case senstive.</span>
+                  <input id="passwordBl" type="text" name="password-bl" value="1,!">
+                  <label for="passwordBlError">Default error message:</label>
+                  <textarea id="passwordBlError" type="text" name="password-bl-error">%name% contains invalid characters.</textarea>
+                </div>
+              </div>
+              <div class="item">
+                <label for="passwordWl">Whitelist</label>
+                <input class="itemSwitch off" type="checkbox"/>
+                <div class="itemContent hidden">
+                  <span class="itemComment">Separated by comma. Characters are case senstive.</span>
+                  <input id="passwordWl" type="text" name="password-wl" value="">
+                  <label for="passwordWlError">Default error message:</label>
+                  <textarea id="passwordWlError" type="text" name="password-wl-error">Text contains invalid characters.</textarea>
+                </div>
+              </div>
+              <div class="item">
+                <span>Additional Errors</span>
+                <div class="itemContent">
+                  <label for="passwordMatchError">Not matching passwords:</label>
+                  <textarea id="passwordMatchError" type="text" name="password-match-error">Passwords don't match.</textarea>
+                  <label for="passwordRepeatError">Repetition error:</label>
+                  <textarea id="passwordRepeatError" type="text" name="password-repeat-error">Please, repeat new password.</textarea>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+        <div class="selectMenu open">
+          <strong class="selectMenuDefaultText">Add new</strong>
+          <ul class="selectDropdown">
+            <li id="select-text">Text</li>
+            <li id="select-number">Number</li>
+            <li id="select-tel">Phone</lid>
+            <li id="select-email">E-mail</li>
+            <li id="select-password">Password</li>
+          </ul>
+        </div>
+      </div>
+      <div class="preview form">
+        <div class="fixed-wrapper">
+          <h3>Live Preview</h3>
+          <div class="inputContainer">
+            <input class="input passed" type="text" name="name" value="John Doe"/>
+          </div>
+          <div class="inputContainer">
+            <input class="input error" type="number" name="age" value="234"/>
+            <ul class="errorContainer">
+              <li class="error">Age must be between 0 and 99.</li>
+            </ul>
+          </div>
+          <div class="inputContainer">
+            <input class="input error" type="text" name="phone" value="+4407x123456789012"/>
+            <ul class="errorContainer">
+              <li class="error">Phone must be 10 to 12 characters long.</li>
+              <li class="error">Phone contains invalid characters.</li>
+            </ul>
+          </div>
+          <div class="inputContainer">
+            <input class="input error" type="password" name="password" value="123!"/>
+            <input class="input error" type="password" name="password" value="1"/>
+            <ul class="errorContainer">
+              <li class="error">Password is too short.</li>
+              <li class="error">Password contains invalid characters.</li>
+              <li class="error">Passwords must match.</li>
+            </ul>
+          </div>
+          <div class="inputContainer">
+            <input class="input passed" type="text" name="email" value="hello@domain.com"/>
+          </div>
+          <button class="button main">Send</button>
+          <button class="button default">Clear</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
