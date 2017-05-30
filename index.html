@@ -3,8 +3,31 @@
   <head>
     <meta charset="utf-8">
     <title>Form Validator</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script type="text/javascript" src="js/validation.js"></script>
   </head>
   <body>
-
+    <div class="app">
+      <div class="settings">
+        <ul id="activeInputs"></ul>
+        <div id="builderNewMenu">
+          <strong class="selectMenuDefaultText"><a href="#" id="builderNewAddBtn">Add New</a></strong>
+          <ul class="selectDropdown">
+            <li><a href="#" id="builderNewText">Text</a></li>
+            <li><a href="#" id="builderNewNumber">Number</a></li>
+            <li><a href="#" id="builderNewTel">Phone</a></li>
+            <li><a href="#" id="builderNewEmail">E-mail</a></li>
+            <li><a href="#" id="builderNewPassword">Password</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="preview form">
+        <div class="fixed-wrapper">
+          <h3>Live Preview</h3>
+          <div id="renderedPreview"></div>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript" src="js/app.js"></script>
   </body>
 </html>

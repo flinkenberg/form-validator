@@ -4,13 +4,14 @@
     <meta charset="utf-8">
     <title>Form Validator</title>
     <link rel="stylesheet" href="css/style.css">
+    <script type="text/javascript" src="js/validation.js"></script>
   </head>
   <body>
     <div class="app">
       <div class="settings">
-        <ul class="activeInputs">
-          <li class="inputBlock open">
-            <h3>Text</h3>
+        <ul id="activeInputs">
+          <li class="inputBlock">
+            <a href="#" class="inputBlockToggle"><h3>Text</h3></a>
             <div class="inputBlockControl">
               x
             </div>
@@ -59,8 +60,8 @@
               </div>
             </div>
           </li>
-          <li class="inputBlock open">
-            <h3>Number</h3>
+          <li class="inputBlock">
+            <a href="#" class="inputBlockToggle"><h3>Number</h3></a>
             <div class="inputBlockControl">
               x
             </div>
@@ -89,8 +90,8 @@
               </div>
             </div>
           </li>
-          <li class="inputBlock open">
-            <h3>Phone</h3>
+          <li class="inputBlock">
+            <a href="#" class="inputBlockToggle"><h3>Phone</h3></a>
             <div class="inputBlockControl">
               x
             </div>
@@ -129,8 +130,8 @@
               </div>
             </div>
           </li>
-          <li class="inputBlock open">
-            <h3>E-mail</h3>
+          <li class="inputBlock">
+            <a href="#" class="inputBlockToggle"><h3>E-mail</h3></a>
             <div class="inputBlockControl">
               x
             </div>
@@ -150,8 +151,8 @@
               </div>
             </div>
           </li>
-          <li class="inputBlock open">
-            <h3>Password</h3>
+          <li class="inputBlock">
+            <a href="#" class="inputBlockToggle"><h3>Password</h3></a>
             <div class="inputBlockControl">
               <a href="#" class="deleteBtn">x</a>
             </div>
@@ -210,14 +211,14 @@
             </div>
           </li>
         </ul>
-        <div class="selectMenu open">
-          <strong class="selectMenuDefaultText">Add new</strong>
+        <div id="builderNewMenu">
+          <strong class="selectMenuDefaultText"><a href="#" id="builderNewAddBtn">Add New</a></strong>
           <ul class="selectDropdown">
-            <li id="select-text">Text</li>
-            <li id="select-number">Number</li>
-            <li id="select-tel">Phone</lid>
-            <li id="select-email">E-mail</li>
-            <li id="select-password">Password</li>
+            <li><a href="#" id="builderNewText">Text</a></li>
+            <li><a href="#" id="builderNewNumber">Number</a></li>
+            <li><a href="#" id="builderNewTel">Phone</a></li>
+            <li><a href="#" id="builderNewEmail">E-mail</a></li>
+            <li><a href="#" id="builderNewPassword">Password</a></li>
           </ul>
         </div>
       </div>
@@ -252,7 +253,7 @@
           <div class="inputContainer">
             <input class="input passed" type="text" name="email" value="hello@domain.com"/>
           </div>
-          <button class="button main">Send</button>
+          <button id="fvSubmit" class="button main">Send</button>
           <button class="button default">Clear</button>
         </div>
       </div>

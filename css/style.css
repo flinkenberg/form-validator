@@ -13,6 +13,7 @@ a {
 .app {
   display: table;
   margin: 0 auto;
+  max-width: 992px;
   padding: 15px;
 }
 .settings {
@@ -25,43 +26,43 @@ a {
 }
 .preview {
   position: relative;
-  vertical-align: top;
   display: table-cell;
-  min-width: 200px;
+  vertical-align: top;
+  width: 350px;
 }
 .preview > .fixed-wrapper {
   position: fixed;
-  min-width: 200px;
+  width: 350px;
   padding: 0 15px;
   margin-right: 15px;
   border: 2px dashed #DFDFDF;
 }
-.selectMenu {
+#builderNewMenu {
   margin-top: 15px;
   padding: 10px 15px;
   min-height: 40px;
   border: 2px solid #DFDFDF;
   background-color: #F0F0F0;
 }
-.selectMenu .selectDropdown {
+#builderNewMenu .selectDropdown {
   display: none;
   margin: 15px 0 0 0;
   padding: 0 0 15px 0;
 }
-.selectMenu.open .selectDropdown {
+#builderNewMenu.open .selectDropdown {
   display: block;
 }
-.selectMenu .selectDropdown > li {
+#builderNewMenu .selectDropdown > li {
   list-style: none;
 }
-.activeInputs {
+#activeInputs {
   margin: 0;
   padding: 0;
 }
-.activeInputs input, .activeInputs textarea {
+#activeInputs input, #activeInputs textarea {
   display: block;
 }
-.activeInputs > li.inputBlock {
+#activeInputs > li.inputBlock {
   display: block;
   list-style: none;
   margin-bottom: 5px;
@@ -70,41 +71,48 @@ a {
   border: 2px solid #DFDFDF;
   background-color: #FCFCFC;
 }
-.activeInputs > li.inputBlock h3 {
+#activeInputs > li.inputBlock h3 {
   display: inline-block;
   margin: 0;
+  width: 90%;
   font-size: 1em;
 }
-.activeInputs > li.inputBlock > .inputBlockControl {
+#activeInputs > li.inputBlock > .inputBlockControl {
   float: right;
   padding: 0 5px;
+  width: 10%;
   font-size: 1.2em;
+  text-align: right;
+  cursor: pointer;
 }
-.activeInputs > li.inputBlock > .inputSettings {
+#activeInputs > li.inputBlock > .inputBlockControl:hover {
+  color: #1D6BFF;
+}
+#activeInputs > li.inputBlock > .inputSettings {
   display: none;
   margin-top: 7.5px;
   padding: 7.5px;
 }
-.activeInputs > li.inputBlock.open > .inputSettings {
+#activeInputs > li.inputBlock.open > .inputSettings {
   display: block;
 }
-.activeInputs > li.inputBlock > .inputSettings > .item {
+#activeInputs > li.inputBlock > .inputSettings > .item {
   margin-bottom: 15px;
 }
-.activeInputs > li.inputBlock > .inputSettings > .item > .itemSwitch {
+#activeInputs > li.inputBlock > .inputSettings > .item > .itemSwitch {
   display: inline-block;
 }
-.activeInputs > li.inputBlock > .inputSettings > .item > .itemContent {
+#activeInputs > li.inputBlock > .inputSettings > .item > .itemContent {
   padding-left: 15px;
   font-size: .8em;
 }
-.activeInputs > li.inputBlock > .inputSettings > .item > .itemContent.hidden {
+#activeInputs > li.inputBlock > .inputSettings > .item > .itemContent.hidden {
   display: none;
 }
-.activeInputs > li.inputBlock > .inputSettings > .item > .itemContent > input {
+#activeInputs > li.inputBlock > .inputSettings > .item > .itemContent > input {
   display: block;
 }
-.activeInputs > li.inputBlock > .inputSettings > .item > .itemContent > .itemComment {
+#activeInputs > li.inputBlock > .inputSettings > .item > .itemContent > .itemComment {
   display: block;
 }
 
