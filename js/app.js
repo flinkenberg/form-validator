@@ -57,7 +57,24 @@ function createBlock(type) {
       newBlock = new PasswordBlock;
       break;
   }
-  newBlock.save()
+  newBlock.save();
+}
+
+function makeRules(data) {
+  var name,
+      value,
+      error,
+      rule,
+      rules = [];
+  for (var i = 0; i < data.length; i++) {
+    rule = data[i].split(':');
+    name = rule[0];
+    value = rule[1];
+    error = rule[2];
+    rule = new Rule(name, value, error);
+    rules.push(rule);
+  }
+  return rules;
 }
 
 function Block(data) {
@@ -65,92 +82,72 @@ function Block(data) {
   newId++;
   store[data.type]++;
   this.id = data.type + '-' + newId;
+  this.formId = 'fv-'+this.id;
   this.name = data.type.charAt(0).toUpperCase() + data.type.slice(1)+ ' ' +newId;
-  this.formData = {
-    id: 'fv-'+this.id
-  }
+  this.rules = [];
 }
 
 function TextBlock(data) {
   Block.call(this, {
     type: 'text'
   });
-  this.min = 0;
-  this.minError = '%name% is too short.';
-  this.max = 10;
-  this.maxError = '%name% is too long.';
-  this.bl = '';
+  this.rules = makeRules([
+    'min:0:%name% is too short.',
+    'max:10:%name% is too long.',
+    'bl: :%name% contains invalid characters.',
+    'wl: :%name% contains invalid characters.'
+  ]);
   this.blIsActive = false;
-  this.blError = '%name% contains invalid characters.';
-  this.wl = '';
   this.wlIsActive = false;
-  this.wlError = '%name% contains invalid characters.';
 }
 
 function NumberBlock(data) {
   Block.call(this, {
     type: 'number'
   });
-  this.min = 0;
-  this.minError = '%name% is too short.';
-  this.max = 10;
-  this.maxError = '%name% is too long.';
-  this.bl = '';
-  this.blIsActive = false;
-  this.blError = '%name% contains invalid characters.';
-  this.wl = '';
-  this.wlIsActive = false;
-  this.wlError = '%name% contains invalid characters.';
+  this.rules = makeRules([
+    'min:0:%name% must be bigger than %min%',
+    'max:99:%name% must be bigger than %min%'
+  ]);
 }
 
 function PhoneBlock(data) {
   Block.call(this, {
     type: 'phone'
   });
-  this.min = 0;
-  this.minError = '%name% is too short.';
-  this.max = 10;
-  this.maxError = '%name% is too long.';
-  this.bl = '';
+  this.rules = makeRules([
+    'min:10:%name% must have %min% to %max% digits.',
+    'max:11:%name% must have %min% to %max% digits.',
+    'bl: :%name% contains invalid characters.',
+    'wl:+,-,(,):%name% contains invalid characters.'
+  ]);
   this.blIsActive = false;
-  this.blError = '%name% contains invalid characters.';
-  this.wl = '';
-  this.wlIsActive = false;
-  this.wlError = '%name% contains invalid characters.';
+  this.wlIsActive = true;
 }
 function EmailBlock(data) {
   Block.call(this, {
     type: 'email'
   });
-  this.min = 0;
-  this.minError = '%name% is too short.';
-  this.max = 10;
-  this.maxError = '%name% is too long.';
-  this.bl = '';
-  this.blIsActive = false;
-  this.blError = '%name% contains invalid characters.';
-  this.wl = '';
-  this.wlIsActive = false;
-  this.wlError = '%name% contains invalid characters.';
+  this.rules = makeRules([
+    'format: :%name% is not in a valid format.'
+  ]);
 }
 function PasswordBlock(data) {
   Block.call(this, {
     type: 'password'
   });
-  this.min = 0;
-  this.minError = '%name% is too short.';
-  this.max = 10;
-  this.maxError = '%name% is too long.';
-  this.bl = '';
-  this.blIsActive = false;
-  this.blError = '%name% contains invalid characters.';
-  this.wl = '';
-  this.wlIsActive = false;
-  this.wlError = '%name% contains invalid characters.';
+  this.rules = makeRules([
+    'min:6:%name% is too short.',
+    'max:20:%name% is too long.',
+    'bl:1,!:%name% contains invalid characters.',
+    'wl: :%name% contains invalid characters.',
+    'match: :Passwords don\'t match.',
+    'repeat: :Please repeat new password.'
+  ]);
 }
+
 Block.prototype.save = function() {
   store.blocks.push(this);
-  console.log(this, 'saved to store');
   return this;
 }
 
@@ -163,6 +160,12 @@ PhoneBlock.prototype = Object.create(Block.prototype);
 EmailBlock.prototype = Object.create(Block.prototype);
 
 PasswordBlock.prototype = Object.create(Block.prototype);
+
+function Rule(name, value, error) {
+  this.name = name;
+  this.value = value;
+  this.error = error;
+}
 
 window.onload = function() {
   createStore();
