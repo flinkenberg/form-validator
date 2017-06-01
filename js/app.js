@@ -27,6 +27,7 @@ function createStore() {
   if (typeof window.store === 'undefined') {
     window.store = {
       getState: function() {return this},
+      forms: [],
       blocks: [],
       events: [],
       text: 0,
@@ -57,7 +58,10 @@ function createBlock(type) {
       newBlock = new PasswordBlock;
       break;
   }
-  newBlock.save().render().renderInput();
+  newBlock.save()
+          .render()
+          .buildForm()
+          .buildInput();
 }
 
 function makeRules(data) {
@@ -75,22 +79,6 @@ function makeRules(data) {
     rules.push(rule);
   }
   return rules;
-}
-
-function e(type, attributes, content) {
-  var element = document.createElement(type);
-  if (attributes) {
-    for (var i = 0; i < attributes.length; i++) {
-      for (var key in attributes[i]) {
-        if (Object.prototype.hasOwnProperty.call(attributes[i],key)) {
-          console.log(key, attributes[i][key]);
-          element.setAttribute(key, attributes[i][key]);
-        }
-      }
-    }
-  }
-  if (content) element.innerHTML = content;
-  return element;
 }
 
 function Block(data) {
@@ -178,14 +166,25 @@ Block.prototype.render = function() {
   return this;
 }
 
-Block.prototype.renderInput = function() {
-  var rootForInputs = document.getElementById('fv-form'),
-      newInputContainer = document.createElement('div');
-  newInputContainer.setAttribute('class', 'inputContainer');
-  rootForInputs.removeAttribute('class');
-  var markup = generateMarkupFor(this, 'INPUT');
-  newInputContainer.innerHTML = markup;
-  rootForInputs.insertBefore(newInputContainer, rootForInputs.firstChild);
+Block.prototype.buildForm = function() {
+  if (store.forms.length === 0) {
+    var form;
+    form = new Form({id: 1, inputs: []});
+    form.save();
+  }
+  return this;
+}
+Block.prototype.buildInput = function() {
+  var rules = parseErrorVars(this.rules),
+      form = store.forms[store.forms.length-1],
+      input = new Input({
+        id: this.formId,
+        name: this.name,
+        type: this.type,
+        rules: rules
+      });
+  input.save()
+       .render();
   return this;
 }
 
@@ -219,6 +218,53 @@ function Rule(name, value, error) {
   this.name = name;
   this.value = value;
   this.error = error;
+}
+
+function Form(data) {
+  this.id = data.id;
+  this.inputs = data.inputs;
+}
+
+Form.prototype.save = function() {
+  store.forms.push(this);
+}
+
+Form.prototype.validate = function() {
+  //
+}
+
+function Input(data) {
+  this.id = data.id;
+  this.name = data.name;
+  this.type = data.type;
+  this.rules = data.rules;
+}
+
+Input.prototype.save = function() {
+  store.forms[store.forms.length-1].inputs.push(this);
+  return this;
+}
+
+Input.prototype.render = function() {
+  var rootForInputs = document.getElementById('fv-form'),
+      newInputContainer = document.createElement('div');
+  newInputContainer.setAttribute('class', 'inputContainer');
+  rootForInputs.removeAttribute('class');
+  var markup = generateMarkupFor(this, 'INPUT');
+  newInputContainer.innerHTML = markup;
+  rootForInputs.insertBefore(newInputContainer, rootForInputs.firstChild);
+  return this;
+}
+
+function parseErrorVars(rules) {
+  for (var i = 0; i < rules.length; i++) {
+    switch (true) {
+      case rules[i].error.indexOf('%name%') !== -1:
+        rules[i].error.replace('%name%', this.name);
+        break;
+    }
+  }
+  return rules;
 }
 
 function generateMarkupFor(block, elementType) {
@@ -319,7 +365,7 @@ function generateMarkupFor(block, elementType) {
           input = '<input class="fv-input" type="number" value="" placeholder="'+block.name+'"/>\n';
           break;
         case 'email':
-          input = '<input class="fv-input" type="email" value="" placeholder="'+block.name+'"/>\n';
+          input = '<input class="fv-input" type="text" value="" placeholder="'+block.name+'"/>\n';
           break;
         case 'password':
           input = '<input class="fv-input" type="password" value="" placeholder="'+block.name+'"/>\n'
