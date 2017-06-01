@@ -221,28 +221,28 @@
           </ul>
         </div>
       </div>
-      <div class="preview form">
+      <form class="preview form">
         <div class="fixed-wrapper">
           <h3>Live Preview</h3>
           <div class="inputContainer">
-            <input class="input passed" type="text" name="name" value="John Doe"/>
+            <input class="fv-input passed" type="text" name="name" value="John Doe"/>
           </div>
           <div class="inputContainer">
-            <input class="input error" type="number" name="age" value="234"/>
+            <input class="fv-input error" type="number" name="age" value="234"/>
             <ul class="errorContainer">
               <li class="error">Age must be between 0 and 99.</li>
             </ul>
           </div>
           <div class="inputContainer">
-            <input class="input error" type="text" name="phone" value="+4407x123456789012"/>
+            <input class="fv-input error" type="text" name="phone" value="+4407x123456789012"/>
             <ul class="errorContainer">
               <li class="error">Phone must be 10 to 12 characters long.</li>
               <li class="error">Phone contains invalid characters.</li>
             </ul>
           </div>
           <div class="inputContainer">
-            <input class="input error" type="password" name="password" value="123!"/>
-            <input class="input error" type="password" name="password" value="1"/>
+            <input class="fv-input error" type="password" name="password" value="123!"/>
+            <input class="fv-input error" type="password" name="password" value="1"/>
             <ul class="errorContainer">
               <li class="error">Password is too short.</li>
               <li class="error">Password contains invalid characters.</li>
@@ -250,12 +250,12 @@
             </ul>
           </div>
           <div class="inputContainer">
-            <input class="input passed" type="text" name="email" value="hello@domain.com"/>
+            <input class="fv-input passed" type="text" name="email" value="hello@domain.com"/>
           </div>
-          <button id="fvSubmit" class="button main">Send</button>
-          <button class="button default">Clear</button>
+          <input id="fv-submit" type="submit" class="button main" value="Send"/>
+          <input class="button default" type="button" value="Clear"/>
         </div>
-      </div>
+      </form>
     </div>
   </body>
 </html>

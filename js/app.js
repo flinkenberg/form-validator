@@ -57,7 +57,7 @@ function createBlock(type) {
       newBlock = new PasswordBlock;
       break;
   }
-  newBlock.save().render();
+  newBlock.save().render().renderInput();
 }
 
 function makeRules(data) {
@@ -169,12 +169,23 @@ Block.prototype.save = function() {
 }
 
 Block.prototype.render = function() {
-  var rootForInputs = document.getElementById('activeInputs'),
+  var rootForBlocks = document.getElementById('activeInputs'),
       newInputBlock = document.createElement('li');
   newInputBlock.setAttribute('class', 'inputBlock open');
-  var markup = generateMarkupFor(this);
+  var markup = generateMarkupFor(this, 'BLOCK');
   newInputBlock.innerHTML = markup;
-  rootForInputs.insertBefore(newInputBlock, rootForInputs.firstChild);
+  rootForBlocks.insertBefore(newInputBlock, rootForBlocks.firstChild);
+  return this;
+}
+
+Block.prototype.renderInput = function() {
+  var rootForInputs = document.getElementById('fv-form'),
+      newInputContainer = document.createElement('div');
+  newInputContainer.setAttribute('class', 'inputContainer');
+  rootForInputs.removeAttribute('class');
+  var markup = generateMarkupFor(this, 'INPUT');
+  newInputContainer.innerHTML = markup;
+  rootForInputs.insertBefore(newInputContainer, rootForInputs.firstChild);
   return this;
 }
 
@@ -210,87 +221,112 @@ function Rule(name, value, error) {
   this.error = error;
 }
 
-function generateMarkupFor(block) {
+function generateMarkupFor(block, elementType) {
   var markup = '';
-  var name   =  '<h3>'+block.name+'</h3>\n'
-             +  '<div class="inputSettings">\n'
-             +  '<div class="item">\n'
-             +  '<label for="'+block.id+"-name"+'">Input name</label>\n'
-             +  '<div class="itemContent">\n'
-             +  '<input id="'+block.id+"-name"+'" type="text" value="'+block.name+'"/>\n'
-             +  '</div>\n'
-             +  '</div>\n';
+  switch (elementType) {
+    case 'BLOCK':
+      var name   =  '<h3>'+block.name+'</h3>\n'
+                 +  '<div class="inputSettings">\n'
+                 +  '<div class="item">\n'
+                 +  '<label for="'+block.id+"-name"+'">Input name</label>\n'
+                 +  '<div class="itemContent">\n'
+                 +  '<input id="'+block.id+"-name"+'" type="text" value="'+block.name+'"/>\n'
+                 +  '</div>\n'
+                 +  '</div>\n';
 
-  var min    =  '<div class="item">\n'
-             +  '<label for="'+block.id+"-min"+'">Minimum value</label>\n'
-             +  '<div class="itemContent">\n'
-             +  '<input id="'+block.id+"-min"+'" type="text" value="'+block.getRuleValue('min')+'"/>\n'
-             +  '<label for="'+block.id+"-minError"+'">Error message:</label>\n'
-             +  '<textarea id="'+block.id+"-minError"+'" type="text">'+block.getRuleError('min')+'</textarea>\n'
-             +  '</div>\n'
-             +  '</div>\n';
+      var min    =  '<div class="item">\n'
+                 +  '<label for="'+block.id+"-min"+'">Minimum value</label>\n'
+                 +  '<div class="itemContent">\n'
+                 +  '<input id="'+block.id+"-min"+'" type="text" value="'+block.getRuleValue('min')+'"/>\n'
+                 +  '<label for="'+block.id+"-minError"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-minError"+'" type="text">'+block.getRuleError('min')+'</textarea>\n'
+                 +  '</div>\n'
+                 +  '</div>\n';
 
-  var max    =  '<div class="item">\n'
-             +  '<label for="'+block.id+"-max"+'">Maximum value</label>\n'
-             +  '<div class="itemContent">\n'
-             +  '<input id="'+block.id+"-max"+'" type="text" value="'+block.getRuleValue('max')+'"/>\n'
-             +  '<label for="'+block.id+"-maxError"+'">Error message:</label>\n'
-             +  '<textarea id="'+block.id+"-maxError"+'" type="text">'+block.getRuleError('max')+'</textarea>\n'
-             +  '</div>\n'
-             +  '</div>\n';
+      var max    =  '<div class="item">\n'
+                 +  '<label for="'+block.id+"-max"+'">Maximum value</label>\n'
+                 +  '<div class="itemContent">\n'
+                 +  '<input id="'+block.id+"-max"+'" type="text" value="'+block.getRuleValue('max')+'"/>\n'
+                 +  '<label for="'+block.id+"-maxError"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-maxError"+'" type="text">'+block.getRuleError('max')+'</textarea>\n'
+                 +  '</div>\n'
+                 +  '</div>\n';
 
-  var bl     =  '<div class="item">\n'
-             +  '<label for="'+block.id+"-bl"+'">Blacklist</label>\n'
-             +  '<div class="itemContent">\n'
-             +  '<span class="itemComment">Separated by comma. Characters are case sensitive.</span>\n'
-             +  '<input id="'+block.id+"-bl"+'" type="text" value="'+block.getRuleValue('bl')+'"/>\n'
-             +  '<label for="'+block.id+"-blError"+'">Error message:</label>\n'
-             +  '<textarea id="'+block.id+"-blError"+'">'+block.getRuleError('bl')+'</textarea>\n'
-             +  '</div>\n'
-             +  '</div>\n';
+      var bl     =  '<div class="item">\n'
+                 +  '<label for="'+block.id+"-bl"+'">Blacklist</label>\n'
+                 +  '<div class="itemContent">\n'
+                 +  '<span class="itemComment">Separated by comma. Characters are case sensitive.</span>\n'
+                 +  '<input id="'+block.id+"-bl"+'" type="text" value="'+block.getRuleValue('bl')+'"/>\n'
+                 +  '<label for="'+block.id+"-blError"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-blError"+'">'+block.getRuleError('bl')+'</textarea>\n'
+                 +  '</div>\n'
+                 +  '</div>\n';
 
-  var wl     =  '<div class="item">\n'
-             +  '<label for="'+block.id+"-wl"+'">Whitelist</label>\n'
-             +  '<div class="itemContent">\n'
-             +  '<span class="itemComment">Separated by comma. Characters are case sensitive.</span>\n'
-             +  '<input id="'+block.id+"-wl"+'" type="text" value="'+block.getRuleValue('wl')+'"/>\n'
-             +  '<label for="'+block.id+"-wlError"+'">Error message:</label>\n'
-             +  '<textarea id="'+block.id+"-wlError"+'">'+block.getRuleError('wl')+'</textarea>\n'
-             +  '</div>\n'
-             +  '</div>\n';
+      var wl     =  '<div class="item">\n'
+                 +  '<label for="'+block.id+"-wl"+'">Whitelist</label>\n'
+                 +  '<div class="itemContent">\n'
+                 +  '<span class="itemComment">Separated by comma. Characters are case sensitive.</span>\n'
+                 +  '<input id="'+block.id+"-wl"+'" type="text" value="'+block.getRuleValue('wl')+'"/>\n'
+                 +  '<label for="'+block.id+"-wlError"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-wlError"+'">'+block.getRuleError('wl')+'</textarea>\n'
+                 +  '</div>\n'
+                 +  '</div>\n';
 
-  var format =  '<div class="item">\n'
-             +  '<span>Errors</span>\n'
-             +  '<div class="itemContent">\n'
-             +  '<label for="'+block.id+"-format"+'">Error message:</label>\n'
-             +  '<textarea id="'+block.id+"-format"+'">'+block.getRuleError('format')+'</textarea>\n'
-             +  '</div>\n'
-             +  '</div>\n';
+      var format =  '<div class="item">\n'
+                 +  '<span>Errors</span>\n'
+                 +  '<div class="itemContent">\n'
+                 +  '<label for="'+block.id+"-format"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-format"+'">'+block.getRuleError('format')+'</textarea>\n'
+                 +  '</div>\n'
+                 +  '</div>\n';
 
-  var psw    =  '<div class="item">\n'
-             +  '<span>Errors</span>\n'
-             +  '<div class="itemContent">\n'
-             +  '<label for="'+block.id+"-match"+'">Error message:</label>\n'
-             +  '<textarea id="'+block.id+"-match"+'">'+block.getRuleError('match')+'</textarea>\n'
-             +  '<label for="'+block.id+"-repeat"+'">Error message:</label>\n'
-             +  '<textarea id="'+block.id+"-repeat"+'">'+block.getRuleError('repeat')+'</textarea>\n'
-             +  '</div>\n'
-             +  '</div>\n';
-  switch (block.type) {
-    case 'text':
-      markup = markup.concat(name, min, max, bl, wl);
+      var psw    =  '<div class="item">\n'
+                 +  '<span>Errors</span>\n'
+                 +  '<div class="itemContent">\n'
+                 +  '<label for="'+block.id+"-match"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-match"+'">'+block.getRuleError('match')+'</textarea>\n'
+                 +  '<label for="'+block.id+"-repeat"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-repeat"+'">'+block.getRuleError('repeat')+'</textarea>\n'
+                 +  '</div>\n'
+                 +  '</div>\n';
+      switch (block.type) {
+        case 'text':
+          markup = markup.concat(name, min, max, bl, wl);
+          break;
+        case 'number':
+          markup = markup.concat(name, min, max);
+          break;
+        case 'phone':
+          markup = markup.concat(name, min, max, wl);
+          break;
+        case 'email':
+          markup = markup.concat(name, format);
+          break;
+        case 'password':
+          markup = markup.concat(name, min, max, bl, wl, psw);
+          break;
+      }
       break;
-    case 'number':
-      markup = markup.concat(name, min, max);
-      break;
-    case 'phone':
-      markup = markup.concat(name, min, max, wl);
-      break;
-    case 'email':
-      markup = markup.concat(name, format);
-      break;
-    case 'password':
-      markup = markup.concat(name, min, max, bl, wl, psw);
+    case 'INPUT':
+      var input,
+          errorContainer =  '<ul class="errorContainer"></ul>';
+      switch (block.type) {
+        case 'text':
+        case 'phone':
+          input = '<input class="fv-input" type="text" value="" placeholder="'+block.name+'"/>\n';
+          break;
+        case 'number':
+          input = '<input class="fv-input" type="number" value="" placeholder="'+block.name+'"/>\n';
+          break;
+        case 'email':
+          input = '<input class="fv-input" type="email" value="" placeholder="'+block.name+'"/>\n';
+          break;
+        case 'password':
+          input = '<input class="fv-input" type="password" value="" placeholder="'+block.name+'"/>\n'
+                + '<input class="fv-input" type="password" value="" placeholder="Repeat '+block.name+'"/>\n';
+          break;
+      }
+      markup = markup.concat(input, errorContainer);
       break;
   }
   return markup;
