@@ -175,7 +175,7 @@ Block.prototype.buildForm = function() {
   return this;
 }
 Block.prototype.buildInput = function() {
-  var rules = parseErrorVars(this.rules),
+  var rules = parseErrorVars(this),
       form = store.forms[store.forms.length-1],
       input = new Input({
         id: this.formId,
@@ -256,15 +256,22 @@ Input.prototype.render = function() {
   return this;
 }
 
-function parseErrorVars(rules) {
-  for (var i = 0; i < rules.length; i++) {
+function parseErrorVars(input) {
+  for (var i = 0; i < input.rules.length; i++) {
+    var newError;
     switch (true) {
-      case rules[i].error.indexOf('%name%') !== -1:
-        rules[i].error.replace('%name%', this.name);
-        break;
+      case input.rules[i].error.indexOf('%name%') !== -1:
+        newError = input.rules[i].error.replace('%name%', input.name);
+        input.rules[i].error = newError;
+      case input.rules[i].error.indexOf('%min%') !== -1:
+        newError = input.rules[i].error.replace('%min%', input.rules[i].value);
+        input.rules[i].error = newError;
+      case input.rules[i].error.indexOf('%max%') !== -1:
+        newError = input.rules[i].error.replace('%max%', input.rules[i].value);
+        input.rules[i].error = newError;
     }
   }
-  return rules;
+  return input.rules;
 }
 
 function generateMarkupFor(block, elementType) {
