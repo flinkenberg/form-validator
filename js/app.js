@@ -29,7 +29,6 @@ function createStore() {
       getState: function() {return this},
       forms: [],
       blocks: [],
-      events: [],
       text: 0,
       number: 0,
       phone: 0,
@@ -60,8 +59,8 @@ function createBlock(type) {
   }
   newBlock.save()
           .render()
-          .buildForm()
-          .buildInput();
+          .renderInput()
+          .addListeners();
 }
 
 function makeRules(data) {
@@ -90,6 +89,7 @@ function Block(data) {
   this.type = data.type;
   this.name = data.type.charAt(0).toUpperCase() + data.type.slice(1)+ ' ' +newId;
   this.rules = [];
+  this.events = [];
 }
 
 function TextBlock(data) {
@@ -159,6 +159,7 @@ Block.prototype.save = function() {
 Block.prototype.render = function() {
   var rootForBlocks = document.getElementById('activeInputs'),
       newInputBlock = document.createElement('li');
+  newInputBlock.setAttribute('id', this.id);
   newInputBlock.setAttribute('class', 'inputBlock open');
   var markup = generateMarkupFor(this, 'BLOCK');
   newInputBlock.innerHTML = markup;
@@ -166,25 +167,19 @@ Block.prototype.render = function() {
   return this;
 }
 
-Block.prototype.buildForm = function() {
-  if (store.forms.length === 0) {
-    var form;
-    form = new Form({id: 1, inputs: []});
-    form.save();
+Block.prototype.renderInput = function(rerender) {
+  var rootForInputs = document.getElementById('fv-form');
+  if (rerender) {
+    var inputContainer = document.getElementById(this.formId).parentElement;
+    inputContainer.innerHTML = '';
+  } else {
+    inputContainer = document.createElement('div');
+    inputContainer.setAttribute('class', 'inputContainer');
+    rootForInputs.removeAttribute('class');
   }
-  return this;
-}
-Block.prototype.buildInput = function() {
-  var rules = parseErrorVars(this),
-      form = store.forms[store.forms.length-1],
-      input = new Input({
-        id: this.formId,
-        name: this.name,
-        type: this.type,
-        rules: rules
-      });
-  input.save()
-       .render();
+  var markup = generateMarkupFor(this, 'INPUT');
+  inputContainer.innerHTML = markup;
+  rootForInputs.insertBefore(inputContainer, rootForInputs.firstChild);
   return this;
 }
 
@@ -204,6 +199,44 @@ Block.prototype.getRuleError = function(ruleName) {
   return error;
 }
 
+Block.prototype.addListeners = function() {
+  var block = document.getElementById(this.id),
+      editables = block.querySelectorAll('input, textarea'),
+      event;
+  for (var i = 0; i < editables.length; i++) {
+    event = new Event({
+      type: 'keyup',
+      handler: function(e) {
+        var blockId = e.target.id.split('-'),
+            field = blockId[2],
+            blockId = blockId[0] + '-' + blockId[1],
+            block = null;
+        for (var i = 0; i < store.blocks.length; i++) {
+          store.blocks[i].id === blockId ? block = store.blocks[i] : '';
+        }
+        if (block !== null && block instanceof Block) {
+          block.update(field, e.target.value)
+               .renderInput(true);
+        }
+      }
+    });
+    event.save(this);
+    editables[i].addEventListener(event.type, event.handler, false);
+  }
+  return this;
+}
+
+Block.prototype.update = function(field, value) {
+  if (field === 'name') {
+    this.name = value;
+  } else {
+
+    // update rules
+
+  }
+  return this;
+}
+
 TextBlock.prototype = Object.create(Block.prototype);
 
 NumberBlock.prototype = Object.create(Block.prototype);
@@ -220,40 +253,13 @@ function Rule(name, value, error) {
   this.error = error;
 }
 
-function Form(data) {
-  this.id = data.id;
-  this.inputs = data.inputs;
-}
-
-Form.prototype.save = function() {
-  store.forms.push(this);
-}
-
-Form.prototype.validate = function() {
-  //
-}
-
-function Input(data) {
-  this.id = data.id;
-  this.name = data.name;
+function Event(data) {
   this.type = data.type;
-  this.rules = data.rules;
+  this.handler = data.handler;
 }
 
-Input.prototype.save = function() {
-  store.forms[store.forms.length-1].inputs.push(this);
-  return this;
-}
-
-Input.prototype.render = function() {
-  var rootForInputs = document.getElementById('fv-form'),
-      newInputContainer = document.createElement('div');
-  newInputContainer.setAttribute('class', 'inputContainer');
-  rootForInputs.removeAttribute('class');
-  var markup = generateMarkupFor(this, 'INPUT');
-  newInputContainer.innerHTML = markup;
-  rootForInputs.insertBefore(newInputContainer, rootForInputs.firstChild);
-  return this;
+Event.prototype.save = function(block) {
+  block.events.push(this);
 }
 
 function parseErrorVars(input) {
@@ -366,17 +372,17 @@ function generateMarkupFor(block, elementType) {
       switch (block.type) {
         case 'text':
         case 'phone':
-          input = '<input class="fv-input" type="text" value="" placeholder="'+block.name+'"/>\n';
+          input = '<input id="fv-'+block.id+'" class="fv-input" type="text" value="" placeholder="'+block.name+'"/>\n';
           break;
         case 'number':
-          input = '<input class="fv-input" type="number" value="" placeholder="'+block.name+'"/>\n';
+          input = '<input id="fv-'+block.id+'" class="fv-input" type="number" value="" placeholder="'+block.name+'"/>\n';
           break;
         case 'email':
-          input = '<input class="fv-input" type="text" value="" placeholder="'+block.name+'"/>\n';
+          input = '<input id="fv-'+block.id+'" class="fv-input" type="text" value="" placeholder="'+block.name+'"/>\n';
           break;
         case 'password':
-          input = '<input class="fv-input" type="password" value="" placeholder="'+block.name+'"/>\n'
-                + '<input class="fv-input" type="password" value="" placeholder="Repeat '+block.name+'"/>\n';
+          input = '<input id="fv-'+block.id+'" class="fv-input" type="password" value="" placeholder="'+block.name+'"/>\n'
+                + '<input id="fv-'+block.id+'-repeat" class="fv-input" type="password" value="" placeholder="Repeat '+block.name+'"/>\n';
           break;
       }
       markup = markup.concat(input, errorContainer);

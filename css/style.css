@@ -29,7 +29,6 @@ textarea {
 input:focus, textarea:focus {
   border-color: #1D6BFF;
   color: #1D6BFF;
-  font-size: 1.2em;
 }
 .app {
   display: table;
