@@ -230,9 +230,23 @@ Block.prototype.update = function(field, value) {
   if (field === 'name') {
     this.name = value;
   } else {
-
-    // update rules
-
+    for (var i = 0; i < this.rules.length; i++) {
+      if (this.rules[i].name !== field) {
+        if (this.rules[i].name === field.split('.')[0]) {
+          this.rules[i].error = value;
+        }
+      } else {
+        switch (field) {
+          case 'format':
+          case 'match':
+          case 'repeat':
+            this.rules[i].error = value;
+            break;
+          default:
+            this.rules[i].value = value;
+        }
+      }
+    }
   }
   return this;
 }
@@ -297,8 +311,8 @@ function generateMarkupFor(block, elementType) {
                  +  '<label for="'+block.id+"-min"+'">Minimum value</label>\n'
                  +  '<div class="itemContent">\n'
                  +  '<input id="'+block.id+"-min"+'" type="number" value="'+block.getRuleValue('min')+'"/>\n'
-                 +  '<label for="'+block.id+"-minError"+'">Error message:</label>\n'
-                 +  '<textarea id="'+block.id+"-minError"+'" type="text">'+block.getRuleError('min')+'</textarea>\n'
+                 +  '<label for="'+block.id+"-min.Error"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-min.Error"+'" type="text">'+block.getRuleError('min')+'</textarea>\n'
                  +  '</div>\n'
                  +  '</div>\n';
 
@@ -306,8 +320,8 @@ function generateMarkupFor(block, elementType) {
                  +  '<label for="'+block.id+"-max"+'">Maximum value</label>\n'
                  +  '<div class="itemContent">\n'
                  +  '<input id="'+block.id+"-max"+'" type="number" value="'+block.getRuleValue('max')+'"/>\n'
-                 +  '<label for="'+block.id+"-maxError"+'">Error message:</label>\n'
-                 +  '<textarea id="'+block.id+"-maxError"+'" type="text">'+block.getRuleError('max')+'</textarea>\n'
+                 +  '<label for="'+block.id+"-max.Error"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-max.Error"+'" type="text">'+block.getRuleError('max')+'</textarea>\n'
                  +  '</div>\n'
                  +  '</div>\n';
 
@@ -316,8 +330,8 @@ function generateMarkupFor(block, elementType) {
                  +  '<div class="itemContent">\n'
                  +  '<span class="itemComment">Separated by comma. Characters are case sensitive.</span>\n'
                  +  '<input id="'+block.id+"-bl"+'" type="text" value="'+block.getRuleValue('bl')+'"/>\n'
-                 +  '<label for="'+block.id+"-blError"+'">Error message:</label>\n'
-                 +  '<textarea id="'+block.id+"-blError"+'">'+block.getRuleError('bl')+'</textarea>\n'
+                 +  '<label for="'+block.id+"-bl.Error"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-bl.Error"+'">'+block.getRuleError('bl')+'</textarea>\n'
                  +  '</div>\n'
                  +  '</div>\n';
 
@@ -326,8 +340,8 @@ function generateMarkupFor(block, elementType) {
                  +  '<div class="itemContent">\n'
                  +  '<span class="itemComment">Separated by comma. Characters are case sensitive.</span>\n'
                  +  '<input id="'+block.id+"-wl"+'" type="text" value="'+block.getRuleValue('wl')+'"/>\n'
-                 +  '<label for="'+block.id+"-wlError"+'">Error message:</label>\n'
-                 +  '<textarea id="'+block.id+"-wlError"+'">'+block.getRuleError('wl')+'</textarea>\n'
+                 +  '<label for="'+block.id+"-wl.Error"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-wl.Error"+'">'+block.getRuleError('wl')+'</textarea>\n'
                  +  '</div>\n'
                  +  '</div>\n';
 
