@@ -61,6 +61,7 @@ function createBlock(type) {
           .render()
           .renderInput()
           .addListeners();
+  build();
 }
 
 function makeRules(data) {
@@ -72,7 +73,7 @@ function makeRules(data) {
   for (var i = 0; i < data.length; i++) {
     rule = data[i].split(':');
     name = rule[0];
-    value = rule[1];
+    value = parseInt(rule[1], 10);
     error = rule[2];
     rule = new Rule(name, value, error);
     rules.push(rule);
@@ -111,8 +112,8 @@ function NumberBlock(data) {
     type: 'number'
   });
   this.rules = makeRules([
-    'min:0:%name% must be bigger than %min%',
-    'max:99:%name% must be bigger than %min%'
+    'min:0:%name% must be bigger or equal to %min%',
+    'max:99:%name% must be smaller or equal to %min%'
   ]);
 }
 
@@ -170,15 +171,20 @@ Block.prototype.render = function() {
 Block.prototype.renderInput = function(rerender) {
   var rootForInputs = document.getElementById('fv-form');
   if (rerender) {
-    var inputContainer = document.getElementById(this.formId).parentElement;
+    var oldBlock = document.getElementById(this.formId),
+        inputContainer = oldBlock.parentElement;
+        errorContainer = inputContainer.querySelector('.errorContainer');
     inputContainer.innerHTML = '';
+    oldBlock.placeholder = this.name;
+    inputContainer.appendChild(oldBlock);
+    inputContainer.appendChild(errorContainer);
   } else {
     inputContainer = document.createElement('div');
     inputContainer.setAttribute('class', 'inputContainer');
     rootForInputs.removeAttribute('class');
+    var markup = generateMarkupFor(this, 'INPUT');
+    inputContainer.innerHTML = markup;
   }
-  var markup = generateMarkupFor(this, 'INPUT');
-  inputContainer.innerHTML = markup;
   rootForInputs.insertBefore(inputContainer, rootForInputs.firstChild);
   return this;
 }
@@ -217,6 +223,7 @@ Block.prototype.addListeners = function() {
         if (block !== null && block instanceof Block) {
           block.update(field, e.target.value)
                .renderInput(true);
+          build();
         }
       }
     });
@@ -227,28 +234,29 @@ Block.prototype.addListeners = function() {
 }
 
 Block.prototype.update = function(field, value) {
+  var block = this;
   if (field === 'name') {
     this.name = value;
   } else {
-    for (var i = 0; i < this.rules.length; i++) {
-      if (this.rules[i].name !== field) {
-        if (this.rules[i].name === field.split('.')[0]) {
-          this.rules[i].error = value;
+    for (var i = 0; i < block.rules.length; i++) {
+      if (block.rules[i].name !== field) {
+        if (block.rules[i].name === field.split('.')[0]) {
+          block.rules[i].error = value;
         }
       } else {
         switch (field) {
           case 'format':
           case 'match':
           case 'repeat':
-            this.rules[i].error = value;
+            block.rules[i].error = value;
             break;
           default:
-            this.rules[i].value = value;
+            block.rules[i].value = parseInt(value, 10);
         }
       }
     }
   }
-  return this;
+  return block;
 }
 
 TextBlock.prototype = Object.create(Block.prototype);
@@ -276,22 +284,33 @@ Event.prototype.save = function(block) {
   block.events.push(this);
 }
 
-function parseErrorVars(input) {
-  for (var i = 0; i < input.rules.length; i++) {
-    var newError;
-    switch (true) {
-      case input.rules[i].error.indexOf('%name%') !== -1:
-        newError = input.rules[i].error.replace('%name%', input.name);
-        input.rules[i].error = newError;
-      case input.rules[i].error.indexOf('%min%') !== -1:
-        newError = input.rules[i].error.replace('%min%', input.rules[i].value);
-        input.rules[i].error = newError;
-      case input.rules[i].error.indexOf('%max%') !== -1:
-        newError = input.rules[i].error.replace('%max%', input.rules[i].value);
-        input.rules[i].error = newError;
+function parseErrorVars(block) {
+  var newRules = [];
+  for (var i = 0; i < block.rules.length; i++) {
+    var oldRule = block.rules[i],
+    newRule = clone(oldRule);
+    function clone(rule) {
+      if (rule instanceof Object) {
+        var ruleCopy = {};
+        for (var attribute in rule) {
+          if (rule.hasOwnProperty(attribute)) {
+            ruleCopy[attribute] = rule[attribute];
+          }
+        }
+        return ruleCopy;
+      }
     }
+    switch (true) {
+      case oldRule.error.indexOf('%name%') !== -1:
+        newRule.error = newRule.error.replace('%name%', block.name);
+      case oldRule.error.indexOf('%min%') !== -1:
+        newRule.error = newRule.error.replace('%min%', newRule.value);
+      case oldRule.error.indexOf('%max%') !== -1:
+        newRule.error = newRule.error.replace('%max%', newRule.value);
+    }
+    newRules.push(newRule);
   }
-  return input.rules;
+  return newRules;
 }
 
 function generateMarkupFor(block, elementType) {
@@ -403,6 +422,87 @@ function generateMarkupFor(block, elementType) {
       break;
   }
   return markup;
+}
+
+function validateInput(e) {
+  var input = e.target,
+      errors = input.errors,
+      blank = false,
+      errorContainer = input.parentElement.querySelector('.errorContainer');
+  function removeError(error) {
+    for (var i = 0; i < errors.length; i++) {
+      if (errors[i] === error) {
+        errors.splice(i, 1);
+      }
+    }
+  }
+  if (input.value.length === 0) {
+    errors = [];
+    blank = true;
+  } else {
+    for (var i = 0; i < input.rules.length; i++) {
+      var rule = input.rules[i];
+      switch (rule.name) {
+        case 'min':
+          if (input.value < rule.value) {
+            if (errors.indexOf(input.id + '-err-min.' + rule.error) === -1) {
+              input.errors.push(input.id + '-err-min.' + rule.error);
+            }
+          } else {
+            removeError(input.id+'-err-min.' + rule.error);
+          }
+        break;
+        case 'max':
+          if (input.value > rule.value) {
+            if (errors.indexOf(input.id + '-err-max.' + rule.error) === -1) {
+              input.errors.push(input.id + '-err-max.' + rule.error);
+            }
+          } else {
+            removeError(input.id+'-err-max.' + rule.error);
+          }
+          break;
+      }
+    }
+  }
+  if (errors.length) {
+    input.setAttribute('class', 'fv-input error');
+    for (var i = 0; i < input.errors.length; i++) {
+      errorContainer.innerHTML = '';
+      var message = document.createElement('li');
+      message.setAttribute('class', 'error');
+      message.innerHTML = input.errors[i].split('.')[1];
+      errorContainer.appendChild(message);
+    }
+  } else if (errors.length === 0 && blank === true) {
+    input.setAttribute('class', 'fv-input');
+    errorContainer.innerHTML = '';
+  } else {
+    input.setAttribute('class', 'fv-input passed');
+    errorContainer.innerHTML = '';
+  }
+  return;
+}
+
+function build() {
+  if (typeof form === 'undefined') {
+    var form = document.getElementById('fv-form'),
+    form = window.form = form;
+  }
+  form.inputs = form.querySelectorAll('.fv-input,.fv-number.error,.fv-number.passed');
+  for (var i = 0; i < form.inputs.length; i++) {
+    if (typeof form.inputs[i].hasEvent === 'undefined' || form.inputs[i].hasEvent === false) {
+      form.inputs[i].addEventListener('keyup', validateInput, false);
+      form.inputs[i].hasEvent = true;
+    }
+    form.inputs[i].errors = [];
+    form.inputs[i].rules = [];
+    for (var idx = 0; idx < store.blocks.length; idx++) {
+      if (store.blocks[idx].formId === form.inputs[i].id) {
+        form.inputs[i].rules = parseErrorVars(store.blocks[idx]);
+      }
+    }
+  }
+  return form;
 }
 
 window.onload = function() {

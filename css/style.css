@@ -165,6 +165,11 @@ input:focus, textarea:focus {
   background-color: #E7FFF2;
   color: #37C473;
 }
+.form .fv-input.passed:focus {
+  border-color: #37C473;
+  background-color: #FFFFFF;
+  color: #37C473;
+}
 .form .fv-input.error {
   border-color: #FF7989;
   background-color: #FFECEE;
