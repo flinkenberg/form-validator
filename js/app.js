@@ -73,7 +73,11 @@ function makeRules(data) {
   for (var i = 0; i < data.length; i++) {
     rule = data[i].split(':');
     name = rule[0];
-    value = parseInt(rule[1], 10);
+    if (isNaN(rule[1]) || rule[1].trim() === '') {
+      value = rule[1];
+    } else {
+      value = parseInt(rule[1], 10);
+    }
     error = rule[2];
     rule = new Rule(name, value, error);
     rules.push(rule);
@@ -88,7 +92,7 @@ function Block(data) {
   this.id = data.type + '-' + newId;
   this.formId = 'fv-'+this.id;
   this.type = data.type;
-  this.name = data.type.charAt(0).toUpperCase() + data.type.slice(1)+ ' ' +newId;
+  this.name = data.type.charAt(0).toUpperCase() + data.type.slice(1);
   this.rules = [];
   this.events = [];
 }
@@ -100,8 +104,8 @@ function TextBlock(data) {
   this.rules = makeRules([
     'min:0:%name% is too short.',
     'max:10:%name% is too long.',
-    'bl: :%name% contains invalid characters.',
-    'wl: :%name% contains invalid characters.'
+    'bl::%name% contains invalid characters.',
+    'wl::%name% contains invalid characters.'
   ]);
   this.blIsActive = false;
   this.wlIsActive = false;
@@ -112,8 +116,8 @@ function NumberBlock(data) {
     type: 'number'
   });
   this.rules = makeRules([
-    'min:0:%name% must be bigger or equal to %min%',
-    'max:99:%name% must be smaller or equal to %min%'
+    'minVal:0:%name% must be bigger or equal to %min%',
+    'maxVal:99:%name% must be smaller or equal to %max%'
   ]);
 }
 
@@ -124,7 +128,7 @@ function PhoneBlock(data) {
   this.rules = makeRules([
     'min:10:%name% must have %min% to %max% digits.',
     'max:11:%name% must have %min% to %max% digits.',
-    'bl: :%name% contains invalid characters.',
+    'bl::%name% contains invalid characters.',
     'wl:+,-,(,):%name% contains invalid characters.'
   ]);
   this.blIsActive = false;
@@ -146,7 +150,7 @@ function PasswordBlock(data) {
     'min:6:%name% is too short.',
     'max:20:%name% is too long.',
     'bl:1,!:%name% contains invalid characters.',
-    'wl: :%name% contains invalid characters.',
+    'wl::%name% contains invalid characters.',
     'match: :Passwords don\'t match.',
     'repeat: :Please repeat new password.'
   ]);
@@ -172,7 +176,7 @@ Block.prototype.renderInput = function(rerender) {
   var rootForInputs = document.getElementById('fv-form');
   if (rerender) {
     var oldBlock = document.getElementById(this.formId),
-        inputContainer = oldBlock.parentElement;
+        inputContainer = oldBlock.parentElement,
         errorContainer = inputContainer.querySelector('.errorContainer');
     inputContainer.innerHTML = '';
     oldBlock.placeholder = this.name;
@@ -224,6 +228,7 @@ Block.prototype.addListeners = function() {
           block.update(field, e.target.value)
                .renderInput(true);
           build();
+          form.validate();
         }
       }
     });
@@ -249,6 +254,10 @@ Block.prototype.update = function(field, value) {
           case 'match':
           case 'repeat':
             block.rules[i].error = value;
+            break;
+          case 'bl':
+          case 'wl':
+            block.rules[i].value = value.trim().toString();
             break;
           default:
             block.rules[i].value = parseInt(value, 10);
@@ -317,17 +326,35 @@ function generateMarkupFor(block, elementType) {
   var markup = '';
   switch (elementType) {
     case 'BLOCK':
-      var name   =  '<h3>'+block.name+'</h3>\n'
+      var name   =  '<h3>'+block.type.charAt(0).toUpperCase()+block.type.slice(1)+'<small> ('+block.id+')</small></h3>\n'
                  +  '<div class="inputSettings">\n'
                  +  '<div class="item">\n'
-                 +  '<label for="'+block.id+"-name"+'">Input name</label>\n'
+                 +  '<label for="'+block.id+"-name"+'">Input placeholder</label>\n'
                  +  '<div class="itemContent">\n'
-                 +  '<input id="'+block.id+"-name"+'" type="text" value="'+block.name+'"/>\n'
+                 +  '<input id="'+block.id+"-name"+'" type="text" value="'+block.type.charAt(0).toUpperCase()+block.type.slice(1)+'"/>\n'
+                 +  '</div>\n'
+                 +  '</div>\n';
+
+      var minVal =  '<div class="item">\n'
+                 +  '<label for="'+block.id+"-minVal"+'">Minimum value</label>\n'
+                 +  '<div class="itemContent">\n'
+                 +  '<input id="'+block.id+"-minVal"+'" type="number" value="'+block.getRuleValue('minVal')+'"/>\n'
+                 +  '<label for="'+block.id+"-minVal.Error"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-minVal.Error"+'" type="text">'+block.getRuleError('minVal')+'</textarea>\n'
+                 +  '</div>\n'
+                 +  '</div>\n';
+
+      var maxVal =  '<div class="item">\n'
+                 +  '<label for="'+block.id+"-maxVal"+'">Maximum value</label>\n'
+                 +  '<div class="itemContent">\n'
+                 +  '<input id="'+block.id+"-maxVal"+'" type="number" value="'+block.getRuleValue('maxVal')+'"/>\n'
+                 +  '<label for="'+block.id+"-maxVal.Error"+'">Error message:</label>\n'
+                 +  '<textarea id="'+block.id+"-maxVal.Error"+'" type="text">'+block.getRuleError('maxVal')+'</textarea>\n'
                  +  '</div>\n'
                  +  '</div>\n';
 
       var min    =  '<div class="item">\n'
-                 +  '<label for="'+block.id+"-min"+'">Minimum value</label>\n'
+                 +  '<label for="'+block.id+"-min"+'">Minimum length</label>\n'
                  +  '<div class="itemContent">\n'
                  +  '<input id="'+block.id+"-min"+'" type="number" value="'+block.getRuleValue('min')+'"/>\n'
                  +  '<label for="'+block.id+"-min.Error"+'">Error message:</label>\n'
@@ -336,7 +363,7 @@ function generateMarkupFor(block, elementType) {
                  +  '</div>\n';
 
       var max    =  '<div class="item">\n'
-                 +  '<label for="'+block.id+"-max"+'">Maximum value</label>\n'
+                 +  '<label for="'+block.id+"-max"+'">Maximum length</label>\n'
                  +  '<div class="itemContent">\n'
                  +  '<input id="'+block.id+"-max"+'" type="number" value="'+block.getRuleValue('max')+'"/>\n'
                  +  '<label for="'+block.id+"-max.Error"+'">Error message:</label>\n'
@@ -347,7 +374,7 @@ function generateMarkupFor(block, elementType) {
       var bl     =  '<div class="item">\n'
                  +  '<label for="'+block.id+"-bl"+'">Blacklist</label>\n'
                  +  '<div class="itemContent">\n'
-                 +  '<span class="itemComment">Separated by comma. Characters are case sensitive.</span>\n'
+                 +  '<span class="itemComment">Expressions or single characters, separated by comma.</span>\n'
                  +  '<input id="'+block.id+"-bl"+'" type="text" value="'+block.getRuleValue('bl')+'"/>\n'
                  +  '<label for="'+block.id+"-bl.Error"+'">Error message:</label>\n'
                  +  '<textarea id="'+block.id+"-bl.Error"+'">'+block.getRuleError('bl')+'</textarea>\n'
@@ -357,7 +384,7 @@ function generateMarkupFor(block, elementType) {
       var wl     =  '<div class="item">\n'
                  +  '<label for="'+block.id+"-wl"+'">Whitelist</label>\n'
                  +  '<div class="itemContent">\n'
-                 +  '<span class="itemComment">Separated by comma. Characters are case sensitive.</span>\n'
+                 +  '<span class="itemComment">Expressions or single characters, separated by comma.</span>\n'
                  +  '<input id="'+block.id+"-wl"+'" type="text" value="'+block.getRuleValue('wl')+'"/>\n'
                  +  '<label for="'+block.id+"-wl.Error"+'">Error message:</label>\n'
                  +  '<textarea id="'+block.id+"-wl.Error"+'">'+block.getRuleError('wl')+'</textarea>\n'
@@ -386,7 +413,7 @@ function generateMarkupFor(block, elementType) {
           markup = markup.concat(name, min, max, bl, wl);
           break;
         case 'number':
-          markup = markup.concat(name, min, max);
+          markup = markup.concat(name, minVal, maxVal);
           break;
         case 'phone':
           markup = markup.concat(name, min, max, wl);
@@ -405,17 +432,17 @@ function generateMarkupFor(block, elementType) {
       switch (block.type) {
         case 'text':
         case 'phone':
-          input = '<input id="fv-'+block.id+'" class="fv-input" type="text" value="" placeholder="'+block.name+'"/>\n';
+          input = '<input id="fv-'+block.id+'" class="fv-input" type="text" value="" placeholder="'+block.type.charAt(0).toUpperCase()+block.type.slice(1)+'"/>\n';
           break;
         case 'number':
-          input = '<input id="fv-'+block.id+'" class="fv-input" type="number" value="" placeholder="'+block.name+'"/>\n';
+          input = '<input id="fv-'+block.id+'" class="fv-input" type="number" value="" placeholder="'+block.type.charAt(0).toUpperCase()+block.type.slice(1)+'"/>\n';
           break;
         case 'email':
-          input = '<input id="fv-'+block.id+'" class="fv-input" type="text" value="" placeholder="'+block.name+'"/>\n';
+          input = '<input id="fv-'+block.id+'" class="fv-input" type="text" value="" placeholder="'+block.type.charAt(0).toUpperCase()+block.type.slice(1)+'"/>\n';
           break;
         case 'password':
-          input = '<input id="fv-'+block.id+'" class="fv-input" type="password" value="" placeholder="'+block.name+'"/>\n'
-                + '<input id="fv-'+block.id+'-repeat" class="fv-input" type="password" value="" placeholder="Repeat '+block.name+'"/>\n';
+          input = '<input id="fv-'+block.id+'" class="fv-input" type="password" value="" placeholder="'+block.type.charAt(0).toUpperCase()+block.type.slice(1)+'"/>\n'
+                + '<input id="fv-'+block.id+'-repeat" class="fv-input" type="password" value="" placeholder="'+block.type.charAt(0).toUpperCase()+block.type.slice(1)+'"/>\n';
           break;
       }
       markup = markup.concat(input, errorContainer);
@@ -425,8 +452,12 @@ function generateMarkupFor(block, elementType) {
 }
 
 function validateInput(e) {
-  var input = e.target,
-      errors = input.errors,
+  if (typeof e === 'string' || e instanceof String) {
+    var input = document.getElementById(e);
+  } else {
+    var input = e.target;
+  }
+  var errors = input.errors,
       blank = false,
       errorContainer = input.parentElement.querySelector('.errorContainer');
   function removeError(error) {
@@ -443,17 +474,35 @@ function validateInput(e) {
     for (var i = 0; i < input.rules.length; i++) {
       var rule = input.rules[i];
       switch (rule.name) {
-        case 'min':
+        case 'minVal':
           if (input.value < rule.value) {
+            if (errors.indexOf(input.id + '-err-minVal.' + rule.error) === -1) {
+              input.errors.push(input.id + '-err-minVal.' + rule.error);
+            }
+          } else {
+            removeError(input.id+'-err-minVal.' + rule.error);
+          }
+        break;
+        case 'maxVal':
+          if (input.value > rule.value) {
+            if (errors.indexOf(input.id + '-err-maxVal.' + rule.error) === -1) {
+              input.errors.push(input.id + '-err-maxVal.' + rule.error);
+            }
+          } else {
+            removeError(input.id+'-err-maxVal.' + rule.error);
+          }
+          break;
+        case 'min':
+          if (input.value.length < rule.value) {
             if (errors.indexOf(input.id + '-err-min.' + rule.error) === -1) {
               input.errors.push(input.id + '-err-min.' + rule.error);
             }
           } else {
             removeError(input.id+'-err-min.' + rule.error);
           }
-        break;
+          break;
         case 'max':
-          if (input.value > rule.value) {
+          if (input.value.length > rule.value) {
             if (errors.indexOf(input.id + '-err-max.' + rule.error) === -1) {
               input.errors.push(input.id + '-err-max.' + rule.error);
             }
@@ -461,15 +510,54 @@ function validateInput(e) {
             removeError(input.id+'-err-max.' + rule.error);
           }
           break;
+        case 'bl':
+          var characters = rule.value.split(','),
+              inputText = input.value.trim(),
+              matches = [];
+          if (characters.length > 1) {
+            for (var i = 0; i < characters.length; i++) {
+              inputText.indexOf(characters[i]) !== -1 ? matches.push(characters[i]) : '';
+            }
+          } else {
+            inputText.indexOf(rule.value) !== -1 ? matches.push(rule.value) : '';
+          }
+          if (matches.length) {
+            if (errors.indexOf(input.id + '-err-bl.' + rule.error) === -1) {
+              input.errors.push(input.id + '-err-bl.' + rule.error);
+            }
+          } else {
+            removeError(input.id+'-err-bl.' + rule.error);
+          }
+          break;
+        case 'wl':
+          var characters = rule.value.split(','),
+              inputText = input.value.trim(),
+              matches = [];
+          if (characters.length > 1) {
+            for (var i = 0; i < characters.length; i++) {
+              inputText.indexOf(characters[i]) !== -1 ? matches.push(characters[i]) : '';
+            }
+          } else {
+            inputText.indexOf(rule.value) !== -1 ? matches.push(rule.value) : '';
+          }
+          if (!matches.length && inputText.length > 0) {
+            if (errors.indexOf(input.id + '-err-wl.' + rule.error) === -1) {
+              input.errors.push(input.id + '-err-wl.' + rule.error);
+            }
+          } else {
+            removeError(input.id+'-err-wl.' + rule.error);
+          }
+          break;
       }
     }
   }
   if (errors.length) {
     input.setAttribute('class', 'fv-input error');
+    errorContainer.innerHTML = '';
     for (var i = 0; i < input.errors.length; i++) {
-      errorContainer.innerHTML = '';
       var message = document.createElement('li');
       message.setAttribute('class', 'error');
+      message.setAttribute('id', input.errors[i].split('.')[0]);
       message.innerHTML = input.errors[i].split('.')[1];
       errorContainer.appendChild(message);
     }
@@ -487,6 +575,11 @@ function build() {
   if (typeof form === 'undefined') {
     var form = document.getElementById('fv-form'),
     form = window.form = form;
+    form.validate = function() {
+      for (var i = 0; i < this.inputs.length; i++) {
+        validateInput(this.inputs[i].id);
+      }
+    }
   }
   form.inputs = form.querySelectorAll('.fv-input,.fv-number.error,.fv-number.passed');
   for (var i = 0; i < form.inputs.length; i++) {
